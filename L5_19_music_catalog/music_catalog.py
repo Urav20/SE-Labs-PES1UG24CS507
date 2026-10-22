@@ -20,6 +20,12 @@ conn.execute(
 
 def add_song(title, artist, plays=0, playlist=None):
     """Add a song to the catalog and optionally update a playlist."""
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("Song title must be a non-empty string.")
+
+    if not isinstance(artist, str) or not artist.strip():
+        raise ValueError("Artist name must be a non-empty string.")
+
     if playlist is None:
         playlist = []
 
@@ -36,7 +42,8 @@ def shuffle_pick():
     ids = [row[0] for row in conn.execute("SELECT id FROM songs")]
     if not ids:
         return None
-    return random.choice(ids)  # nosec B311 - song selection does not require cryptographic randomness
+    # Song selection does not require cryptographic randomness.
+    return random.choice(ids)
 
 
 def popularity(title):
@@ -59,10 +66,13 @@ def save_playlist(playlist):
 def load_playlist(blob):
     """Deserialize a playlist from JSON bytes."""
     playlist = json.loads(blob.decode("utf-8"))
+
     if not isinstance(playlist, list):
         raise ValueError("Playlist data must be a list.")
+
     if not all(isinstance(song, str) for song in playlist):
         raise ValueError("Every playlist entry must be a string.")
+
     return playlist
 
 
