@@ -37,11 +37,10 @@ def test_parking_fee_never_returns_negative(vehicle, minutes, is_ev, lost_ticket
     assert parking_fee(vehicle, minutes, is_ev, lost_ticket) >= 0
 
 
-@given(VALID_VEHICLES, st.integers(min_value=0, max_value=10**6),
+@given(VALID_VEHICLES, st.integers(min_value=0, max_value=30),
        st.booleans())
 def test_stays_of_thirty_minutes_or_less_are_free(vehicle, minutes, is_ev):
-    if minutes <= 30:
-        assert parking_fee(vehicle, minutes, is_ev, False) == 0
+    assert parking_fee(vehicle, minutes, is_ev, False) == 0
 
 
 @given(VALID_VEHICLES, st.integers(min_value=0, max_value=10**6),
@@ -50,6 +49,14 @@ def test_lost_ticket_adds_exactly_two_hundred(vehicle, minutes, is_ev):
     with_ticket = parking_fee(vehicle, minutes, is_ev, True)
     without_ticket = parking_fee(vehicle, minutes, is_ev, False)
     assert with_ticket == without_ticket + 200
+
+
+@given(st.sampled_from(["bike", "car"]),
+       st.integers(min_value=31, max_value=10**6))
+def test_ev_vehicles_receive_half_fee(vehicle, minutes):
+    regular_fee = parking_fee(vehicle, minutes, False, False)
+    ev_fee = parking_fee(vehicle, minutes, True, False)
+    assert ev_fee == regular_fee // 2
 
 
 @given(VALID_VEHICLES, st.integers(min_value=31, max_value=10**6))
